@@ -35,7 +35,6 @@
     "url": "git+https://github.com/alexmacarthur/typeit.git"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
     "babel-jest": "^21.2.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.6.1",
@@ -45,7 +44,10 @@
     "prettier": "^1.8.2",
     "regenerator-runtime": "^0.11.0",
     "rollup": "^0.57.1",
-    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-uglify": "^3.0.0"
+  },
+  "dependencies": {
+    "@babel/core": "^7.1.2"
   }
 }

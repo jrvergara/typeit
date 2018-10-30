@@ -13,18 +13,7 @@ const banner = `/*!
  */`
 
 const plugins = [
-  babel({
-    babelrc: false,
-    presets: [
-      [
-        'env',
-        {
-          modules: false
-        }
-      ]
-    ],
-    plugins: ['external-helpers']
-  })
+  babel()
 ]
 
 export default [

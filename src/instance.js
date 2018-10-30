@@ -42,11 +42,29 @@ export default class Instance {
 
     this.generateQueue();
 
-    //-- We have no strings! So, don't do anything.
-    if (!this.options.strings.length || !this.options.strings[0]) return;
+    // this.next();
 
-    if (this.autoInit) {
-      this.init();
+    this.fire();
+
+    //-- We have no strings! So, don't do anything.
+    // if (!this.options.strings.length || !this.options.strings[0]) return;
+
+    // if (this.autoInit) {
+    //   this.init();
+    // }
+  }
+
+  async fire() {
+
+    for (let key of this.queue) {
+      await new Promise((resolve, reject) => {
+        setTimeout(function () {
+
+          console.log(key);
+
+          resolve();
+        }, this.typePace);
+      });
     }
   }
 
@@ -520,6 +538,9 @@ export default class Instance {
   }
 
   next() {
+
+    return;
+
     if (this.isFrozen) {
       return;
     }
