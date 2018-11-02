@@ -9,6 +9,8 @@ import {
   appendStyleBlock
 } from "./utilities";
 
+import noderize from './helpers/noderize';
+
 export default class Instance {
   constructor(element, id, options, autoInit, typeit) {
     this.id = id;
@@ -193,20 +195,24 @@ export default class Instance {
    */
   queueString(string) {
     if (!string) return;
+    string = 'one two <strong>three</strong> four <strong>five</strong>';
 
-    string = 'some string <strong>text</strong>.<i>another</i>';
-    let parser = new DOMParser();
-    let tempDoc = parser.parseFromString(string, "text/html");
-    let stringNodes = tempDoc.body.querySelectorAll('*');
+    //-- Get array of string with nodes where applicable.
+    let myArray = noderize(string);
 
-    //-- Replace node instances with placeholders.
-    [].slice.call(stringNodes).forEach((item, index) => {
-      string = string.replace(item.outerHTML, '{%}');
-    });
+    console.log(myArray);
 
-    let splitOnPlaceholder = string.split('{%}');
+    return;
 
-    console.log(splitOnPlaceholder);
+    // let splitOnPlaceholder = string.split('{%}');
+
+    // splitOnPlaceholder = splitOnPlaceholder.map(item => {
+    //   return item.split('');
+    // });
+
+    // console.log(splitOnPlaceholder);
+
+    // console.log(splitOnPlaceholder.join("X"));
 
     // splitOnPlaceholder.forEach((item, index) => {
     //   splitOnPlaceholder.splice(index + 1, 0, '{%}');
@@ -218,7 +224,7 @@ export default class Instance {
 
     // splitOnPlaceholder = splitOnPlaceholder.join('{%}');
 
-    console.log(splitOnPlaceholder);
+    // console.log(splitOnPlaceholder);
 
     return;
 

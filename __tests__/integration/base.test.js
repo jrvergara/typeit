@@ -1,4 +1,4 @@
-import TypeIt from "../src/typeit";
+import TypeIt from "../../src/typeit";
 
 test("Clears out remnants of previous instances correctly.", () => {
   jest.useFakeTimers();

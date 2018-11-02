@@ -97,6 +97,25 @@
     afterComplete: false
   };
 
+  function noderize (string) {
+    let parser = new DOMParser();
+    let tempDoc = parser.parseFromString(string, "text/html");
+    let stringNodes = tempDoc.body.querySelectorAll('*'); //-- Replace node instances with placeholders.
+
+    [].slice.call(stringNodes).forEach((item, index) => {
+      string = string.replace(item.outerHTML, '{%}');
+    });
+    let stringArray = string.split(''); //-- Replace placeholders w/ nodes.
+
+    stringArray.forEach((item, index) => {
+      if (item === '{' && stringArray[index + 1] === '%' && stringArray[index + 2] === '}') {
+        //-- Insert element.
+        stringArray.splice(index, 3, '<TAG>');
+      }
+    });
+    return stringArray;
+  }
+
   class Instance {
     constructor(element, id, options, autoInit, typeit) {
       this.id = id;
@@ -247,24 +266,25 @@
 
     queueString(string) {
       if (!string) return;
-      string = 'some string <strong>text</strong>.<i>another</i>';
-      let parser = new DOMParser();
-      let tempDoc = parser.parseFromString(string, "text/html");
-      let stringNodes = tempDoc.body.querySelectorAll('*'); //-- Replace node instances with placeholders.
+      string = 'one two <strong>three</strong> four <strong>five</strong>'; //-- Get array of string with nodes where applicable.
 
-      [].slice.call(stringNodes).forEach((item, index) => {
-        string = string.replace(item.outerHTML, '{%}');
-      });
-      let splitOnPlaceholder = string.split('{%}');
-      console.log(splitOnPlaceholder); // splitOnPlaceholder.forEach((item, index) => {
+      let myArray = noderize(string);
+      console.log(myArray);
+      return; // let splitOnPlaceholder = string.split('{%}');
+      // splitOnPlaceholder = splitOnPlaceholder.map(item => {
+      //   return item.split('');
+      // });
+      // console.log(splitOnPlaceholder);
+      // console.log(splitOnPlaceholder.join("X"));
+      // splitOnPlaceholder.forEach((item, index) => {
       //   splitOnPlaceholder.splice(index + 1, 0, '{%}');
       // });
       // splitOnPlaceholder = splitOnPlaceholder.map(item => {
       //   return item.split('');
       // });
       // splitOnPlaceholder = splitOnPlaceholder.join('{%}');
+      // console.log(splitOnPlaceholder);
 
-      console.log(splitOnPlaceholder);
       return; // string = toArray(string);
 
       string = string.split("");
