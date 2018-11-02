@@ -1,11 +1,11 @@
 export default function (string) {
 
   let parser = new DOMParser();
-  let tempDoc = parser.parseFromString(string, "text/html");
-  let stringNodes = tempDoc.body.querySelectorAll('*');
+  let doc = parser.parseFromString(string, "text/html");
+  let nodes = [].slice.call(doc.body.querySelectorAll('*'));
 
   //-- Replace node instances with placeholders.
-  [].slice.call(stringNodes).forEach((item, index) => {
+  nodes.forEach((item, index) => {
     string = string.replace(item.outerHTML, '{%}');
   });
 
@@ -19,7 +19,7 @@ export default function (string) {
       stringArray[index + 2] === '}'
     ) {
       //-- Insert element.
-      stringArray.splice(index, 3, '<TAG>');
+      stringArray.splice(index, 3, nodes.shift());
     }
   });
 
