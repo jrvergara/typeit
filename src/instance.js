@@ -10,6 +10,7 @@ import {
 } from "./utilities";
 
 import noderize from './helpers/noderize';
+import createNodeString from './helpers/createNodeString';
 
 export default class Instance {
   constructor(element, id, options, autoInit, typeit) {
@@ -46,7 +47,7 @@ export default class Instance {
 
     this.generateQueue();
 
-    console.log(this.queue);
+    // console.log(this.queue);
 
     // this.next();
 
@@ -363,46 +364,30 @@ export default class Instance {
   type(character, attachTo = null) {
     this.setPace();
 
-    // attachTo = attachTo === null
-    //   ? this.elementContainer
-    //   : attachTo;
-
+    //-- We hit a standard string.
     if(typeof character === 'string') {
       this.insert(character);
       return;
     }
 
+    //-- We hit a node.
     if(typeof character === 'object') {
-      // if we hit an HTML element, we need to expand it?
-      // this.elementContainer.appendChild(character);
+
+      //-- Create element with first character
+      if(character.isFirstCharacter) {
+        this.insert(createNodeString({
+          tag: character.tag,
+          attributes: character.attributes,
+          content: character.content
+        }));
+
+        return;
+      }
+
+      this.insert(character.content, true);
+
       return;
     }
-
-    // this.elementContainer.appendChild(character);
-
-    return;
-
-    this.timeouts[0] = setTimeout(() => {
-
-      //-- We must have an HTML tag!
-      if (typeof character !== "string") {
-        character.innerHTML = "";
-        this.elementContainer.appendChild(character);
-        this.isInTag = true;
-        this.next();
-        return;
-      }
-
-      //-- When we hit the end of the tag, turn it off!
-      if (startsWith(character, "</")) {
-        this.isInTag = false;
-        this.next();
-        return;
-      }
-
-      this.insert(character, this.isInTag);
-
-    }, this.typePace);
   }
 
   setOptions(settings, defaults = null, autonext = true) {

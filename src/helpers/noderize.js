@@ -20,8 +20,31 @@ export default function (string) {
       stringArray[index + 1] === '%' &&
       stringArray[index + 2] === '}'
     ) {
-      //-- Insert element.
-      stringArray.splice(index, 3, nodes.shift());
+
+      //-- Remove placeholder.
+      stringArray.splice(index, 3);
+
+      //-- For each character inside this node, insert an object.
+      let i = index;
+      let node = nodes.shift();
+      node.innerHTML.split('').forEach(character => {
+
+        let atts = [].slice.call(node.attributes).map(att => {
+          return {
+            name: att.name,
+            value: att.nodeValue
+          }
+        });
+
+        stringArray.splice(i, 0, {
+          tag: node.tagName,
+          attributes: atts,
+          content: character,
+          isFirstCharacter: i === index
+        });
+
+        i++;
+      });
     }
   });
 

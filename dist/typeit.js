@@ -44,9 +44,6 @@
       return string.replace(/<\!--.*?-->/g, "");
     });
   }
-  function startsWith(string, search) {
-    return string.indexOf(search) === 0;
-  }
   function toArray(string) {
     return Array.isArray(string) ? string.slice(0) : string.split("<br>");
   }
@@ -110,11 +107,42 @@
     stringArray.forEach((item, index) => {
       //-- Check for a placeholder.
       if (item === '{' && stringArray[index + 1] === '%' && stringArray[index + 2] === '}') {
-        //-- Insert element.
-        stringArray.splice(index, 3, nodes.shift());
+        //-- Remove placeholder.
+        stringArray.splice(index, 3); //-- For each character inside this node, insert an object.
+
+        let i = index;
+        let node = nodes.shift();
+        node.innerHTML.split('').forEach(character => {
+          let atts = [].slice.call(node.attributes).map(att => {
+            return {
+              name: att.name,
+              value: att.nodeValue
+            };
+          });
+          stringArray.splice(i, 0, {
+            tag: node.tagName,
+            attributes: atts,
+            content: character,
+            isFirstCharacter: i === index
+          });
+          i++;
+        });
       }
     });
     return stringArray;
+  }
+
+  function createNodeString ({
+    tag,
+    attributes = [],
+    content = ''
+  }) {
+    let node = document.createElement(tag);
+    attributes.forEach(att => {
+      node.setAttribute(att.name, att.nodeValue);
+    });
+    node.innerHTML = content;
+    return node.outerHTML;
   }
 
   class Instance {
@@ -148,8 +176,8 @@
         this.insertSplitPause(1);
       }
 
-      this.generateQueue();
-      console.log(this.queue); // this.next();
+      this.generateQueue(); // console.log(this.queue);
+      // this.next();
 
       this.fire(); //-- We have no strings! So, don't do anything.
       // if (!this.options.strings.length || !this.options.strings[0]) return;
@@ -406,42 +434,28 @@
     }
 
     type(character, attachTo = null) {
-      this.setPace(); // attachTo = attachTo === null
-      //   ? this.elementContainer
-      //   : attachTo;
+      this.setPace(); //-- We hit a standard string.
 
       if (typeof character === 'string') {
         this.insert(character);
         return;
-      }
+      } //-- We hit a node.
+
 
       if (typeof character === 'object') {
-        // if we hit an HTML element, we need to expand it?
-        // this.elementContainer.appendChild(character);
-        return;
-      } // this.elementContainer.appendChild(character);
-
-
-      return;
-      this.timeouts[0] = setTimeout(() => {
-        //-- We must have an HTML tag!
-        if (typeof character !== "string") {
-          character.innerHTML = "";
-          this.elementContainer.appendChild(character);
-          this.isInTag = true;
-          this.next();
-          return;
-        } //-- When we hit the end of the tag, turn it off!
-
-
-        if (startsWith(character, "</")) {
-          this.isInTag = false;
-          this.next();
+        //-- Create element with first character
+        if (character.isFirstCharacter) {
+          this.insert(createNodeString({
+            tag: character.tag,
+            attributes: character.attributes,
+            content: character.content
+          }));
           return;
         }
 
-        this.insert(character, this.isInTag);
-      }, this.typePace);
+        this.insert(character.content, true);
+        return;
+      }
     }
 
     setOptions(settings, defaults = null, autonext = true) {
