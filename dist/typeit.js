@@ -118,8 +118,9 @@
       this.prepareTargetElement();
       this.prepareDelay("nextStringDelay");
       this.prepareDelay("loopDelay");
-      this.prepareDOM();
-      this.prepareStrings();
+      this.prepareDOM(); //-- Prepare strings.
+
+      this.options.strings = removeComments(toArray(this.options.strings));
 
       if (this.options.startDelete && this.stringsToDelete) {
         this.insert(this.stringsToDelete);
@@ -127,7 +128,8 @@
         this.insertSplitPause(1);
       }
 
-      this.generateQueue(); // this.next();
+      this.generateQueue();
+      console.log(this.queue); // this.next();
 
       this.fire(); //-- We have no strings! So, don't do anything.
       // if (!this.options.strings.length || !this.options.strings[0]) return;
@@ -137,22 +139,16 @@
     }
 
     async fire() {
+      //
       for (let key of this.queue) {
         await new Promise((resolve, reject) => {
-          setTimeout(function () {
-            console.log(key);
+          setTimeout(() => {
+            // console.log(key[0]);
+            key[0].call(this, key[1], key[2]);
             resolve();
           }, this.typePace);
         });
       }
-    }
-    /**
-     * Prepares strings for processing.
-     */
-
-
-    prepareStrings() {
-      this.options.strings = removeComments(toArray(this.options.strings));
     }
     /**
      * Performs DOM-related work to prepare for typing.
@@ -252,6 +248,16 @@
     queueString(string, rake = true) {
       if (!string) return;
       string = toArray(string);
+      let parser = new DOMParser();
+      let tempDoc = parser.parseFromString('stome string <strong>text</strong>.', "text/html");
+      console.log(tempDoc.body.querySelectorAll('*'));
+      [].slice.call(tempDoc.body.querySelectorAll('*')).forEach((item, index) => {
+        // console.log(item.innerHTML);
+        tempDoc.body.replaceChild('hello', item);
+        item.remove();
+      });
+      console.log(tempDoc.body.innerHTML);
+      return;
       let doc = document.implementation.createHTMLDocument("");
       doc.body.innerHTML = string; //-- If it's designated, rake that bad boy for HTML tags and stuff.
 

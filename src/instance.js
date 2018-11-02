@@ -32,7 +32,9 @@ export default class Instance {
     this.prepareDelay("nextStringDelay");
     this.prepareDelay("loopDelay");
     this.prepareDOM();
-    this.prepareStrings();
+
+    //-- Prepare strings.
+    this.options.strings = removeComments(toArray(this.options.strings));
 
     if (this.options.startDelete && this.stringsToDelete) {
       this.insert(this.stringsToDelete);
@@ -41,6 +43,8 @@ export default class Instance {
     }
 
     this.generateQueue();
+
+    console.log(this.queue);
 
     // this.next();
 
@@ -56,23 +60,20 @@ export default class Instance {
 
   async fire() {
 
+    //
+
     for (let key of this.queue) {
       await new Promise((resolve, reject) => {
-        setTimeout(function () {
+        setTimeout(() => {
 
-          console.log(key);
+          // console.log(key[0]);
+          key[0].call(this, key[1], key[2]);
 
           resolve();
+
         }, this.typePace);
       });
     }
-  }
-
-  /**
-   * Prepares strings for processing.
-   */
-  prepareStrings() {
-    this.options.strings = removeComments(toArray(this.options.strings));
   }
 
   /**
@@ -194,6 +195,21 @@ export default class Instance {
     if (!string) return;
 
     string = toArray(string);
+
+    let parser = new DOMParser();
+    let tempDoc = parser.parseFromString('stome string <strong>text</strong>.', "text/html");
+
+    console.log(tempDoc.body.querySelectorAll('*'));
+
+    [].slice.call(tempDoc.body.querySelectorAll('*')).forEach((item, index) => {
+      // console.log(item.innerHTML);
+      tempDoc.body.replaceChild('hello', item);
+      item.remove();
+    });
+
+    console.log(tempDoc.body.innerHTML);
+
+    return;
 
     let doc = document.implementation.createHTMLDocument("");
     doc.body.innerHTML = string;
