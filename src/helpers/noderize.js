@@ -5,7 +5,7 @@ export default function (string) {
   let nodes = [].slice.call(doc.body.querySelectorAll('*'));
 
   //-- Replace node instances with placeholders.
-  nodes.forEach((item, index) => {
+  nodes.forEach(item => {
     string = string.replace(item.outerHTML, '{%}');
   });
 
@@ -13,6 +13,8 @@ export default function (string) {
 
   //-- Replace placeholders w/ nodes.
   stringArray.forEach((item, index) => {
+
+    //-- Check for a placeholder.
     if (
       item === '{' &&
       stringArray[index + 1] === '%' &&

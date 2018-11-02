@@ -174,18 +174,21 @@ export default class Instance {
       this.queueDeletions(string);
       this.insertSplitPause(this.queue.length, string.length);
     });
+
+    // console.lo
   }
 
   /**
    * Delete each character from a string.
    */
   queueDeletions(stringOrNumber = null) {
-    let number =
+
+    let numberOfCharsToDelete =
       typeof stringOrNumber === "string"
         ? stringOrNumber.length
         : stringOrNumber;
 
-    for (let i = 0; i < number; i++) {
+    for (let i = 0; i < numberOfCharsToDelete; i++) {
       this.queue.push([this.delete, 1]);
     }
   }
@@ -195,98 +198,15 @@ export default class Instance {
    */
   queueString(string) {
     if (!string) return;
-    string = 'one two <strong>three</strong> four <strong>five</strong>';
 
     //-- Get array of string with nodes where applicable.
-    let myArray = noderize(string);
+    string = noderize(string);
 
-    console.log(myArray);
-
-    return;
-
-    // let splitOnPlaceholder = string.split('{%}');
-
-    // splitOnPlaceholder = splitOnPlaceholder.map(item => {
-    //   return item.split('');
-    // });
-
-    // console.log(splitOnPlaceholder);
-
-    // console.log(splitOnPlaceholder.join("X"));
-
-    // splitOnPlaceholder.forEach((item, index) => {
-    //   splitOnPlaceholder.splice(index + 1, 0, '{%}');
-    // });
-
-    // splitOnPlaceholder = splitOnPlaceholder.map(item => {
-    //   return item.split('');
-    // });
-
-    // splitOnPlaceholder = splitOnPlaceholder.join('{%}');
-
-    // console.log(splitOnPlaceholder);
-
-    return;
-
-    // string = toArray(string);
-    string = string.split("");
-
-    console.log(string);
-
-    string.forEach(character => {
-      if(character === '{') {
-        console.log(character);
-        return;
-      }
-
-      this.queue.push([this.type, character]);
+    //-- Push each array item to the queue.
+    string.forEach(item => {
+      this.queue.push([this.type, item]);
     });
 
-    console.log(this.queue);
-
-    return;
-
-    let doc = document.implementation.createHTMLDocument("");
-    doc.body.innerHTML = string;
-
-    //-- If it's designated, rake that bad boy for HTML tags and stuff.
-    if (rake) {
-      string = this.rake(string)[0];
-    }
-
-    //-- @todo Improve this check by using regex (rather than startsWith() checks).
-    //-- If an opening HTML tag is found and we're not already printing inside a tag
-    if (
-      this.options.html &&
-      (startsWith(string[0], "<") && !startsWith(string[0], "</"))
-    ) {
-      //-- Create node of that string name, by regexing for the closing tag.
-      let matches = string[0].match(/\<(.*?)\>/);
-      let doc = document.implementation.createHTMLDocument("");
-      doc.body.innerHTML = "<" + matches[1] + "></" + matches[1] + ">";
-
-      //-- Add to the queue.
-      this.queue.push([this.type, doc.body.children[0]]);
-    } else {
-      this.queue.push([this.type, string[0]]);
-    }
-
-    //-- Shorten it by one character.
-    string.splice(0, 1);
-
-    //-- If rake is true, this is the first time we've queued this string.
-    if (rake) {
-      this.queue[this.queue.length - 1].push("first-of-string");
-    }
-
-    //-- If there's more to it, run again until fully printed.
-    if (string.length) {
-      this.queueString(string, false);
-      return;
-    }
-
-    //-- End of string!
-    this.queue[this.queue.length - 1].push("last-of-string");
   }
 
   /**
@@ -440,10 +360,30 @@ export default class Instance {
     });
   }
 
-  type(character) {
+  type(character, attachTo = null) {
     this.setPace();
 
+    // attachTo = attachTo === null
+    //   ? this.elementContainer
+    //   : attachTo;
+
+    if(typeof character === 'string') {
+      this.insert(character);
+      return;
+    }
+
+    if(typeof character === 'object') {
+      // if we hit an HTML element, we need to expand it?
+      // this.elementContainer.appendChild(character);
+      return;
+    }
+
+    // this.elementContainer.appendChild(character);
+
+    return;
+
     this.timeouts[0] = setTimeout(() => {
+
       //-- We must have an HTML tag!
       if (typeof character !== "string") {
         character.innerHTML = "";
@@ -462,7 +402,6 @@ export default class Instance {
 
       this.insert(character, this.isInTag);
 
-      this.next();
     }, this.typePace);
   }
 
