@@ -191,23 +191,52 @@ export default class Instance {
   /**
    * Add steps to the queue for each character in a given string.
    */
-  queueString(string, rake = true) {
+  queueString(string) {
     if (!string) return;
 
-    string = toArray(string);
-
+    string = 'some string <strong>text</strong>.<i>another</i>';
     let parser = new DOMParser();
-    let tempDoc = parser.parseFromString('stome string <strong>text</strong>.', "text/html");
+    let tempDoc = parser.parseFromString(string, "text/html");
+    let stringNodes = tempDoc.body.querySelectorAll('*');
 
-    console.log(tempDoc.body.querySelectorAll('*'));
-
-    [].slice.call(tempDoc.body.querySelectorAll('*')).forEach((item, index) => {
-      // console.log(item.innerHTML);
-      tempDoc.body.replaceChild('hello', item);
-      item.remove();
+    //-- Replace node instances with placeholders.
+    [].slice.call(stringNodes).forEach((item, index) => {
+      string = string.replace(item.outerHTML, '{%}');
     });
 
-    console.log(tempDoc.body.innerHTML);
+    let splitOnPlaceholder = string.split('{%}');
+
+    console.log(splitOnPlaceholder);
+
+    // splitOnPlaceholder.forEach((item, index) => {
+    //   splitOnPlaceholder.splice(index + 1, 0, '{%}');
+    // });
+
+    // splitOnPlaceholder = splitOnPlaceholder.map(item => {
+    //   return item.split('');
+    // });
+
+    // splitOnPlaceholder = splitOnPlaceholder.join('{%}');
+
+    console.log(splitOnPlaceholder);
+
+    return;
+
+    // string = toArray(string);
+    string = string.split("");
+
+    console.log(string);
+
+    string.forEach(character => {
+      if(character === '{') {
+        console.log(character);
+        return;
+      }
+
+      this.queue.push([this.type, character]);
+    });
+
+    console.log(this.queue);
 
     return;
 
