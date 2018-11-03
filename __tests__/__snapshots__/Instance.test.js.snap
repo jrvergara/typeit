@@ -1,0 +1,201 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Queues correct length when HTML is passed. 1`] = `
+Array [
+  Array [
+    [Function],
+    250,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+]
+`;
+
+exports[`Queues correct length when multiple HTML tags are passed. 1`] = `
+Array [
+  Array [
+    [Function],
+    250,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+]
+`;
+
+exports[`Queues number when number is passed. 1`] = `
+Array [
+  Array [
+    [Function],
+    250,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+]
+`;
+
+exports[`Queues string length when simple string is passed. 1`] = `
+Array [
+  Array [
+    [Function],
+    250,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+  Array [
+    [Function],
+    1,
+  ],
+]
+`;

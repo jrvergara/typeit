@@ -128,7 +128,7 @@
   }
 
   class Instance {
-    constructor(element, id, options, autoInit, typeit) {
+    constructor(element, id, options, autoInit = true, typeit = null) {
       this.id = id;
       this.typeit = typeit;
       this.autoInit = autoInit;
@@ -263,9 +263,7 @@
 
 
     queueDeletions(stringOrNumber = null) {
-      let numberOfCharsToDelete = typeof stringOrNumber === "string" ? stringOrNumber.length : stringOrNumber; // should be 11
-
-      console.log(numberOfCharsToDelete);
+      let numberOfCharsToDelete = typeof stringOrNumber === "string" ? noderize(stringOrNumber).length : stringOrNumber;
 
       for (let i = 0; i < numberOfCharsToDelete; i++) {
         this.queue.push([this.delete, 1]);

@@ -11,7 +11,7 @@ import noderize from './helpers/noderize';
 import createNodeString from './helpers/createNodeString';
 
 export default class Instance {
-  constructor(element, id, options, autoInit, typeit) {
+  constructor(element, id, options, autoInit = true, typeit = null) {
     this.id = id;
     this.typeit = typeit;
     this.autoInit = autoInit;
@@ -179,12 +179,8 @@ export default class Instance {
 
     let numberOfCharsToDelete =
       typeof stringOrNumber === "string"
-        ? stringOrNumber.length
+        ? noderize(stringOrNumber).length
         : stringOrNumber;
-
-
-        // should be 11
-    console.log(numberOfCharsToDelete);
 
     for (let i = 0; i < numberOfCharsToDelete; i++) {
       this.queue.push([this.delete, 1]);
@@ -416,8 +412,6 @@ export default class Instance {
     let contents = noderize(this.contents());
 
     console.log(this.contents());
-
-    // if(!contents.length); return;
 
     contents.splice(-1, 1);
 
