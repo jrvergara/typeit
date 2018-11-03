@@ -395,8 +395,7 @@ class Instance {
 
 
   type(character) {
-    this.setPace(); //-- We hit a standard string.
-
+    //-- We hit a standard string.
     if (typeof character === 'string') {
       this.insert(character);
       return;
@@ -451,8 +450,7 @@ class Instance {
   }
 
   delete(chars = null) {
-    let contents = noderize(this.contents());
-    console.log(this.contents()); // if(!contents.length); return;
+    let contents = noderize(this.contents()); // console.log(this.contents());
 
     contents.splice(-1, 1);
     contents = contents.map(character => {

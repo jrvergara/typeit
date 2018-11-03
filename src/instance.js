@@ -340,7 +340,6 @@ export default class Instance {
    * @param {*} character
    */
   type(character) {
-    this.setPace();
 
     //-- We hit a standard string.
     if(typeof character === 'string') {
@@ -411,7 +410,7 @@ export default class Instance {
 
     let contents = noderize(this.contents());
 
-    console.log(this.contents());
+    // console.log(this.contents());
 
     contents.splice(-1, 1);
 
