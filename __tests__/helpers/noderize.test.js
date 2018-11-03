@@ -18,29 +18,38 @@ test("Parses single HTML tag.", () => {
   expect(result).toMatchSnapshot();
 });
 
-// test("Parses multiple HTML tags.", () => {
+test("Parses multiple HTML tags.", () => {
 
-//   let result = noderize(
-//     'Hello, this is some <strong>bold</strong> text, and some <i>italicized</i> text.'
-//   );
+  let result = noderize(
+    'Hello, this is some <strong>bold</strong> text, and some <i>italicized</i> text.'
+  );
 
-//   expect(result).toMatchSnapshot();
-// });
+  expect(result).toMatchSnapshot();
+});
 
-// test("Parses HTML tag at beginning of string.", () => {
+test("Parses HTML tag at beginning of string.", () => {
 
-//   let result = noderize(
-//     '<strong>Hello!</strong> This is some text with HTML at the beginning.'
-//   );
+  let result = noderize(
+    '<strong>Hello!</strong> This is some text with HTML at the beginning.'
+  );
 
-//   expect(result).toMatchSnapshot();
-// });
+  expect(result).toMatchSnapshot();
+});
 
-// test("Parses HTML tag at end of string.", () => {
+test("Parses HTML tag at end of string.", () => {
 
-//   let result = noderize(
-//     'This is some text with HTML at the <em>beginning.</em>'
-//   );
+  let result = noderize(
+    'This is some text with HTML at the <em>beginning.</em>'
+  );
 
-//   expect(result).toMatchSnapshot();
-// });
+  expect(result).toMatchSnapshot();
+});
+
+test("Parses HTML tag with attributes.", () => {
+
+  let result = noderize(
+    'This string has an <strong class="strong-class" id="strong-id" data-whatever="data-att">element</strong> with attributes.'
+  );
+
+  expect(result).toMatchSnapshot();
+});
