@@ -6,9 +6,11 @@ export default function ({
 
   let node = document.createElement(tag);
 
-  attributes.forEach(att => {
-    node.setAttribute(att.name, att.nodeValue);
-  });
+  if(attributes !== undefined) {
+    attributes.forEach(att => {
+      node.setAttribute(att.name, att.nodeValue);
+    });
+  }
 
   node.innerHTML = content;
 

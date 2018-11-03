@@ -41,28 +41,6 @@ function removeComments(arrayOfStrings) {
 function toArray(string) {
   return Array.isArray(string) ? string.slice(0) : string.split("<br>");
 }
-function groupHTMLTags(arr) {
-  let tPosition = [];
-  let tag;
-  let isEntity = false;
-
-  for (let j = 0; j < arr.length; j++) {
-    if (arr[j] === "<" || arr[j] === "&") {
-      tPosition[0] = j;
-      isEntity = arr[j] === "&";
-    }
-
-    if (arr[j] === ">" || arr[j] === ";" && isEntity) {
-      tPosition[1] = j;
-      j = 0;
-      tag = arr.slice(tPosition[0], tPosition[1] + 1).join("");
-      arr.splice(tPosition[0], tPosition[1] - tPosition[0] + 1, tag);
-      isEntity = false;
-    }
-  }
-
-  return arr;
-}
 
 window.TypeItDefaults = {
   strings: [],
@@ -132,9 +110,13 @@ function createNodeString ({
   content = ''
 }) {
   let node = document.createElement(tag);
-  attributes.forEach(att => {
-    node.setAttribute(att.name, att.nodeValue);
-  });
+
+  if (attributes !== undefined) {
+    attributes.forEach(att => {
+      node.setAttribute(att.name, att.nodeValue);
+    });
+  }
+
   node.innerHTML = content;
   return node.outerHTML;
 }
@@ -170,8 +152,7 @@ class Instance {
       this.insertSplitPause(1);
     }
 
-    this.generateQueue(); // console.log(this.queue);
-    // this.next();
+    this.generateQueue(); // this.next();
 
     this.fire(); //-- We have no strings! So, don't do anything.
     // if (!this.options.strings.length || !this.options.strings[0]) return;
@@ -181,11 +162,11 @@ class Instance {
   }
 
   async fire() {
-    //
     for (let key of this.queue) {
       await new Promise((resolve, reject) => {
+        //@todo What about deletePace?
+        this.setPace();
         setTimeout(() => {
-          // console.log(key[0]);
           key[0].call(this, key[1], key[2]);
           resolve();
         }, this.typePace);
@@ -268,7 +249,7 @@ class Instance {
 
       this.queueDeletions(string);
       this.insertSplitPause(this.queue.length, string.length);
-    }); // console.lo
+    });
   }
   /**
    * Delete each character from a string.
@@ -276,7 +257,9 @@ class Instance {
 
 
   queueDeletions(stringOrNumber = null) {
-    let numberOfCharsToDelete = typeof stringOrNumber === "string" ? stringOrNumber.length : stringOrNumber;
+    let numberOfCharsToDelete = typeof stringOrNumber === "string" ? stringOrNumber.length : stringOrNumber; // should be 11
+
+    console.log(numberOfCharsToDelete);
 
     for (let i = 0; i < numberOfCharsToDelete; i++) {
       this.queue.push([this.delete, 1]);
@@ -407,27 +390,13 @@ class Instance {
       this.next();
     }, time ? time : this.options.nextStringDelay.total);
   }
-  /*
-    Convert each string in the array to a sub-array. While happening, search the subarrays for HTML tags.
-    When a complete tag is found, slice the subarray to get the complete tag, insert it at the correct index,
-    and delete the range of indexes where the indexed tag used to be.
-  */
+  /**
+   * Type a SINGLE character.
+   * @param {*} character
+   */
 
 
-  rake(array) {
-    return array.map(item => {
-      //-- Convert string to array.
-      item = item.split(""); //-- If we're parsing HTML, group tags into their own array items.
-
-      if (this.options.html) {
-        return groupHTMLTags(item);
-      }
-
-      return item;
-    });
-  }
-
-  type(character, attachTo = null) {
+  type(character) {
     this.setPace(); //-- We hit a standard string.
 
     if (typeof character === 'string') {
@@ -484,73 +453,23 @@ class Instance {
   }
 
   delete(chars = null) {
-    this.timeouts[1] = setTimeout(() => {
-      this.setPace();
-      let textArray = this.contents().split(""); //-- Cut the array by a character.
+    let contents = noderize(this.contents());
+    console.log(this.contents()); // if(!contents.length); return;
 
-      for (let n = textArray.length - 1; n > -1; n--) {
-        if ((textArray[n] === ">" || textArray[n] === ";") && this.options.html) {
-          for (let o = n; o > -1; o--) {
-            if (textArray.slice(o - 3, o + 1).join("") === "<br>") {
-              textArray.splice(o - 3, 4);
-              break;
-            }
-
-            if (textArray[o] === "&") {
-              textArray.splice(o, n - o + 1);
-              break;
-            }
-
-            if (textArray[o] === "<") {
-              if (textArray[o - 1] !== ">") {
-                if (textArray[o - 1] === ";") {
-                  for (var p = o - 1; p > -1; p--) {
-                    if (textArray[p] === "&") {
-                      textArray.splice(p, o - p);
-                      break;
-                    }
-                  }
-                }
-
-                textArray.splice(o - 1, 1);
-                break;
-              }
-            }
-          }
-
-          break;
-        } else {
-          textArray.pop();
-          break;
-        }
-      } //-- If we've found an empty set of HTML tags...
-
-
-      if (this.options.html && this.contents().indexOf("></") > -1) {
-        for (let i = this.contents().indexOf("></") - 2; i >= 0; i--) {
-          if (textArray[i] === "<") {
-            textArray.splice(i, textArray.length - i);
-            break;
-          }
-        }
-      } //-- Make the content a string again, AND strip out any empty HTML tags.
-      //-- We want do strip empty tags here and ONLY here because when we're
-      //-- typing new content inside an HTML tag, there is momentarily an empty
-      //-- tag we want to keep.
-
-
-      this.contents(textArray.join("").replace(/<[^\/>][^>]*><\/[^>]+>/, "")); //-- Delete again! Don't call directly, to respect possible pauses.
-
-      if (chars === null) {
-        this.queue.unshift([this.delete, textArray.length]);
+    contents.splice(-1, 1);
+    contents = contents.map(character => {
+      if (typeof character === 'object') {
+        return createNodeString({
+          tag: character.tag,
+          attributes: character.attributes,
+          content: character.content
+        });
       }
 
-      if (chars > 1) {
-        this.queue.unshift([this.delete, chars - 1]);
-      }
-
-      this.next();
-    }, this.deletePace);
+      return character;
+    });
+    contents = contents.join('').replace(/<[^\/>][^>]*><\/[^>]+>/, "");
+    this.contents(contents);
   }
   /*
   * Empty the existing text, clearing it instantly.
