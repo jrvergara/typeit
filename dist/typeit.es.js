@@ -113,7 +113,7 @@ function createNodeString ({
 
   if (attributes !== undefined) {
     attributes.forEach(att => {
-      node.setAttribute(att.name, att.nodeValue);
+      node.setAttribute(att.name, att.value);
     });
   }
 
@@ -152,8 +152,7 @@ class Instance {
       this.insertSplitPause(1);
     }
 
-    this.generateQueue(); // this.next();
-
+    this.generateQueue();
     this.fire(); //-- We have no strings! So, don't do anything.
     // if (!this.options.strings.length || !this.options.strings[0]) return;
     // if (this.autoInit) {
@@ -167,11 +166,48 @@ class Instance {
         //@todo What about deletePace?
         this.setPace();
         setTimeout(() => {
+          if (key[2] && key[2].isFirst && this.options.beforeString) {
+            this.options.beforeString(key, this.queue, this.typeit);
+          }
+
+          if (this.options.beforeStep) {
+            this.options.beforeStep(key, this.queue, this.typeit);
+          } //-- Fire this step!
+          // we need to WAIT!!!!
+
+
           key[0].call(this, key[1], key[2]);
+
+          if (key[2] && key[2].isLast && this.options.afterString) {
+            this.options.afterString(key, this.queue, this.typeit);
+          }
+
+          if (this.options.afterStep) {
+            this.options.afterStep(key, this.queue, this.typeit);
+          }
+
           resolve();
         }, this.typePace);
       });
     }
+
+    if (this.options.afterComplete) {
+      this.options.afterComplete(this.typeit);
+    }
+
+    if (this.options.loop) {
+      let delay = this.options.loopDelay ? this.options.loopDelay : this.options.nextStringDelay;
+      console.log(this.queue); //-- Remove initial delay and replace w/ loopDelay.
+
+      this.queue.shift();
+      this.queue.unshift([this.pause, delay.before]); //-- Need to split the delay!
+
+      setTimeout(() => {
+        this.fire();
+      }, delay.after);
+    }
+
+    return; //-- Remember to loop!
   }
   /**
    * Performs DOM-related work to prepare for typing.
@@ -271,10 +307,25 @@ class Instance {
   queueString(string) {
     if (!string) return; //-- Get array of string with nodes where applicable.
 
-    string = noderize(string); //-- Push each array item to the queue.
+    string = noderize(string);
+    let strLength = string.length; //-- Push each array item to the queue.
 
-    string.forEach(item => {
-      this.queue.push([this.type, item]);
+    string.forEach((item, index) => {
+      let queueItem = [this.type, item]; //-- Tag as first character of string for callback usage.
+
+      if (index === 0) {
+        queueItem.push({
+          isFirst: true
+        });
+      }
+
+      if (index + 1 === strLength) {
+        queueItem.push({
+          isLast: true
+        });
+      }
+
+      this.queue.push(queueItem);
     });
   }
   /**
@@ -433,7 +484,7 @@ class Instance {
       mergedSettings[attrname] = settings[attrname];
     }
 
-    this.options = mergedSettings;
+    this.options = mergedSettings; //@todo do i need this?
 
     if (autonext) {
       this.next();
@@ -449,9 +500,8 @@ class Instance {
     this.deletePace = this.options.lifeLike ? randomInRange(deleteSpeed, deleteRange) : deleteSpeed;
   }
 
-  delete(chars = null) {
-    let contents = noderize(this.contents()); // console.log(this.contents());
-
+  delete() {
+    let contents = noderize(this.contents());
     contents.splice(-1, 1);
     contents = contents.map(character => {
       if (typeof character === 'object') {
@@ -474,7 +524,6 @@ class Instance {
 
   empty() {
     this.contents("");
-    this.next();
   }
 
   next() {
@@ -482,51 +531,12 @@ class Instance {
 
     if (this.isFrozen) {
       return;
-    } //-- We haven't reached the end of the queue, go again.
-
-
-    if (this.queue.length > 0) {
-      this.step = this.queue.shift();
-
-      if (this.step[2] === "first-of-string" && this.options.beforeString) {
-        this.options.beforeString(this.step, this.queue, this.typeit);
-      }
-
-      if (this.options.beforeStep) {
-        this.options.beforeStep(this.step, this.queue, this.typeit);
-      } //-- Execute this step!
-
-
-      this.step[0].call(this, this.step[1], this.step[2]);
-
-      if (this.step[2] === "last-of-string" && this.options.afterString) {
-        this.options.afterString(this.step, this.queue, this.typeit);
-      }
-
-      if (this.options.afterStep) {
-        this.options.afterStep(this.step, this.queue, this.typeit);
-      }
-
-      return;
-    } //-- @todo: Remove in next major release.
-
-
-    if (this.options.callback) {
-      this.options.callback();
-    }
-
-    if (this.options.afterComplete) {
-      this.options.afterComplete(this.typeit);
     }
 
     if (this.options.loop) {
       let delay = this.options.loopDelay ? this.options.loopDelay : this.options.nextStringDelay;
       this.queueDeletions(this.contents());
       this.generateQueue([this.pause, delay.before]);
-      setTimeout(() => {
-        this.next();
-      }, delay.after);
-      return;
     }
 
     this.isComplete = true;

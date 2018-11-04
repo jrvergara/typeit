@@ -8,7 +8,7 @@ export default function ({
 
   if(attributes !== undefined) {
     attributes.forEach(att => {
-      node.setAttribute(att.name, att.nodeValue);
+      node.setAttribute(att.name, att.value);
     });
   }
 

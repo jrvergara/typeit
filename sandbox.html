@@ -63,7 +63,21 @@
         speed: 50,
         strings: ['one two <strong class="a-tag" data-something="yes" id="wut">three</strong>', 'five six seven eight'],
         cursorChar: 'X',
-        breakLines: true
+        breakLines: true,
+        loop: true,
+        loopDelay: 10000,
+        beforeString: function () {
+          // console.log('before string!');
+        },
+        beforeStep: function () {
+          // console.log('before step!');
+        },
+        afterString: function (key) {
+          // console.log('after string!', key);
+        },
+        afterStep: function (key) {
+          // console.log('after step!', key);
+        }
       });
 		</script>
 	</body>
