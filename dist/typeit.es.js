@@ -42,7 +42,7 @@ function toArray(string) {
   return Array.isArray(string) ? string.slice(0) : string.split("<br>");
 }
 
-window.TypeItDefaults = {
+var defaults = {
   strings: [],
   speed: 100,
   deleteSpeed: null,
@@ -121,6 +121,7 @@ function createNodeString ({
   return node.outerHTML;
 }
 
+let baseInlineStyles = "display:inline;position:relative;font:inherit;color:inherit;line-height:inherit;";
 class Instance {
   constructor(element, id, options, autoInit = true, typeit = null) {
     this.id = id;
@@ -131,12 +132,9 @@ class Instance {
     this.hasStarted = false;
     this.isFrozen = false;
     this.isComplete = false;
-    this.hasBeenDestroyed = false;
     this.queue = [];
-    this.isInTag = false;
     this.stringsToDelete = "";
-    this.inlineStyles = "display:inline;position:relative;font:inherit;color:inherit;line-height:inherit;";
-    this.setOptions(options, window.TypeItDefaults, false);
+    this.setOptions(options, defaults, false);
     this.prepareTargetElement();
     this.prepareDelay("nextStringDelay");
     this.prepareDelay("loopDelay");
@@ -215,8 +213,8 @@ class Instance {
 
   prepareDOM() {
     this.element.innerHTML = `
-      <span style="${this.inlineStyles}" class="ti-wrapper">
-        <span style="${this.inlineStyles}" class="ti-container"></span>
+      <span style="${baseInlineStyles}" class="ti-wrapper">
+        <span style="${baseInlineStyles}" class="ti-container"></span>
       </span>
       `;
     this.element.setAttribute("data-typeitid", this.id);
@@ -379,7 +377,7 @@ class Instance {
       visibilityStyle = "";
     }
 
-    this.elementWrapper.insertAdjacentHTML("beforeend", `<span style="${this.inlineStyles}${visibilityStyle}left: -.25ch;" class="ti-cursor">${this.options.cursorChar}</span>`);
+    this.elementWrapper.insertAdjacentHTML("beforeend", `<span style="${baseInlineStyles}${visibilityStyle}left: -.25ch;" class="ti-cursor">${this.options.cursorChar}</span>`);
   }
   /**
    * Inserts string to element container.
@@ -462,17 +460,18 @@ class Instance {
         }
       }, this.typePace);
     });
-  }
+  } //@todo refactor
 
-  setOptions(settings, defaults = null, autonext = true) {
+
+  setOptions(settings, defaults$$1 = null, autonext = true) {
     let mergedSettings = {};
 
-    if (defaults === null) {
-      defaults = this.options;
+    if (defaults$$1 === null) {
+      defaults$$1 = this.options;
     }
 
-    for (let attrname in defaults) {
-      mergedSettings[attrname] = defaults[attrname];
+    for (let attrname in defaults$$1) {
+      mergedSettings[attrname] = defaults$$1[attrname];
     }
 
     for (let attrname in settings) {

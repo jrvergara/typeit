@@ -1,4 +1,4 @@
-import "./defaults.js";
+import defaults from "./defaults.js";
 import {
   isVisible,
   randomInRange,
@@ -6,6 +6,7 @@ import {
   toArray,
   appendStyleBlock
 } from "./utilities";
+let baseInlineStyles = "display:inline;position:relative;font:inherit;color:inherit;line-height:inherit;";
 
 import noderize from './helpers/noderize';
 import createNodeString from './helpers/createNodeString';
@@ -20,12 +21,9 @@ export default class Instance {
     this.hasStarted = false;
     this.isFrozen = false;
     this.isComplete = false;
-    this.hasBeenDestroyed = false;
     this.queue = [];
-    this.isInTag = false;
     this.stringsToDelete = "";
-    this.inlineStyles = "display:inline;position:relative;font:inherit;color:inherit;line-height:inherit;";
-    this.setOptions(options, window.TypeItDefaults, false);
+    this.setOptions(options, defaults, false);
     this.prepareTargetElement();
     this.prepareDelay("nextStringDelay");
     this.prepareDelay("loopDelay");
@@ -113,8 +111,8 @@ export default class Instance {
    */
   prepareDOM() {
     this.element.innerHTML = `
-      <span style="${this.inlineStyles}" class="ti-wrapper">
-        <span style="${this.inlineStyles}" class="ti-container"></span>
+      <span style="${baseInlineStyles}" class="ti-wrapper">
+        <span style="${baseInlineStyles}" class="ti-container"></span>
       </span>
       `;
     this.element.setAttribute("data-typeitid", this.id);
@@ -319,7 +317,7 @@ export default class Instance {
     this.elementWrapper.insertAdjacentHTML(
       "beforeend",
       `<span style="${
-        this.inlineStyles
+        baseInlineStyles
       }${visibilityStyle}left: -.25ch;" class="ti-cursor">${
         this.options.cursorChar
       }</span>`
@@ -413,6 +411,7 @@ export default class Instance {
     })
   }
 
+  //@todo refactor
   setOptions(settings, defaults = null, autonext = true) {
     let mergedSettings = {};
 

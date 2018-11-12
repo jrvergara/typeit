@@ -307,18 +307,6 @@ new TypeIt('#element', {
 | loopDelay    | (number in milliseconds or array) The amount of time between looping over a string or set of strings again. This option behaves identically to `nextStringDelay`. If an array is passed, the first value will be the time before typing begins again (after the set of strings has been deleted), and the second value will be the time immediately after the set of strings has finished typing, before they're deleted to restart. If left undefined, the `nextStringDelay` option will be used. | false |
 | html    | (boolean) Handle strings as HTML, which will process tags and HTML entities. If 'false,' strings will be typed literally.  | true  |
 
-#### Changing Option Defaults
-If you're creating several instances of TypeIt on a page, and don't wish to repeatedly set an option of the same value for each of them, you can redefine the default options beforehand. Change the default value(s) before creating any instances, and you'll be set.
-
-```js
-window.TypeItDefaults.speed = 50;
-
-//-- This and all following instances will now have a default speed of 50.
-new TypeIt('#id', {
-  strings: 'A string!'
-});
-```
-
 ## Callback Methods
 Along all of these options, there are several callback method options you may use to trigger JavaScript at different points in time.
 

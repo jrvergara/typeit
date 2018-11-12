@@ -1,4 +1,4 @@
-window.TypeItDefaults = {
+export default {
   strings: [],
   speed: 100,
   deleteSpeed: null,
