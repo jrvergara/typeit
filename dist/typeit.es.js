@@ -135,9 +135,7 @@ class Instance {
     this.queue = [];
     this.isInTag = false;
     this.stringsToDelete = "";
-    this.inlineStyles = {
-      base: "display:inline;position:relative;font:inherit;color:inherit;line-height:inherit;"
-    };
+    this.inlineStyles = "display:inline;position:relative;font:inherit;color:inherit;line-height:inherit;";
     this.setOptions(options, window.TypeItDefaults, false);
     this.prepareTargetElement();
     this.prepareDelay("nextStringDelay");
@@ -162,32 +160,29 @@ class Instance {
 
   async fire() {
     for (let key of this.queue) {
-      await new Promise((resolve, reject) => {
-        //@todo What about deletePace?
+      await new Promise(async (resolve, reject) => {
         this.setPace();
-        setTimeout(() => {
-          if (key[2] && key[2].isFirst && this.options.beforeString) {
-            this.options.beforeString(key, this.queue, this.typeit);
-          }
 
-          if (this.options.beforeStep) {
-            this.options.beforeStep(key, this.queue, this.typeit);
-          } //-- Fire this step!
-          // we need to WAIT!!!!
+        if (key[2] && key[2].isFirst && this.options.beforeString) {
+          this.options.beforeString(key, this.queue, this.typeit);
+        }
+
+        if (this.options.beforeStep) {
+          this.options.beforeStep(key, this.queue, this.typeit);
+        } //-- Fire this step!
 
 
-          key[0].call(this, key[1], key[2]);
+        await key[0].call(this, key[1], key[2]);
 
-          if (key[2] && key[2].isLast && this.options.afterString) {
-            this.options.afterString(key, this.queue, this.typeit);
-          }
+        if (key[2] && key[2].isLast && this.options.afterString) {
+          this.options.afterString(key, this.queue, this.typeit);
+        }
 
-          if (this.options.afterStep) {
-            this.options.afterStep(key, this.queue, this.typeit);
-          }
+        if (this.options.afterStep) {
+          this.options.afterStep(key, this.queue, this.typeit);
+        }
 
-          resolve();
-        }, this.typePace);
+        resolve();
       });
     }
 
@@ -196,18 +191,21 @@ class Instance {
     }
 
     if (this.options.loop) {
+      //-- Split the delay!
       let delay = this.options.loopDelay ? this.options.loopDelay : this.options.nextStringDelay;
-      console.log(this.queue); //-- Remove initial delay and replace w/ loopDelay.
-
-      this.queue.shift();
-      this.queue.unshift([this.pause, delay.before]); //-- Need to split the delay!
-
       setTimeout(() => {
+        //-- Reset queue with initial loop pause.
+        this.queue = []; //-- Queue deletions.
+
+        this.queueDeletions(this.contents()); //-- Regenerate queue.
+
+        this.generateQueue([this.pause, delay.before]); //-- Kick it!
+
         this.fire();
       }, delay.after);
     }
 
-    return; //-- Remember to loop!
+    return;
   }
   /**
    * Performs DOM-related work to prepare for typing.
@@ -216,8 +214,8 @@ class Instance {
 
   prepareDOM() {
     this.element.innerHTML = `
-      <span style="${this.inlineStyles.base}" class="ti-wrapper">
-        <span style="${this.inlineStyles.base}" class="ti-container"></span>
+      <span style="${this.inlineStyles}" class="ti-wrapper">
+        <span style="${this.inlineStyles}" class="ti-container"></span>
       </span>
       `;
     this.element.setAttribute("data-typeitid", this.id);
@@ -292,7 +290,7 @@ class Instance {
    */
 
 
-  queueDeletions(stringOrNumber = null) {
+  queueDeletions(stringOrNumber = 0) {
     let numberOfCharsToDelete = typeof stringOrNumber === "string" ? noderize(stringOrNumber).length : stringOrNumber;
 
     for (let i = 0; i < numberOfCharsToDelete; i++) {
@@ -389,7 +387,7 @@ class Instance {
       visibilityStyle = "";
     }
 
-    this.elementWrapper.insertAdjacentHTML("beforeend", `<span style="${this.inlineStyles.base}${visibilityStyle}left: -.25ch;" class="ti-cursor">${this.options.cursorChar}</span>`);
+    this.elementWrapper.insertAdjacentHTML("beforeend", `<span style="${this.inlineStyles}${visibilityStyle}left: -.25ch;" class="ti-cursor">${this.options.cursorChar}</span>`);
   }
   /**
    * Inserts string to element container.
@@ -435,9 +433,11 @@ class Instance {
   }
 
   pause(time = false) {
-    setTimeout(() => {
-      this.next();
-    }, time ? time : this.options.nextStringDelay.total);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        return resolve();
+      }, time ? time : this.options.nextStringDelay.total);
+    });
   }
   /**
    * Type a SINGLE character.
@@ -446,27 +446,31 @@ class Instance {
 
 
   type(character) {
-    //-- We hit a standard string.
-    if (typeof character === 'string') {
-      this.insert(character);
-      return;
-    } //-- We hit a node.
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        //-- We hit a standard string.
+        if (typeof character === 'string') {
+          this.insert(character);
+          return resolve();
+        } //-- We hit a node.
 
 
-    if (typeof character === 'object') {
-      //-- Create element with first character
-      if (character.isFirstCharacter) {
-        this.insert(createNodeString({
-          tag: character.tag,
-          attributes: character.attributes,
-          content: character.content
-        }));
-        return;
-      }
+        if (typeof character === 'object') {
+          //-- Create element with first character
+          if (character.isFirstCharacter) {
+            this.insert(createNodeString({
+              tag: character.tag,
+              attributes: character.attributes,
+              content: character.content
+            }));
+            return;
+          }
 
-      this.insert(character.content, true);
-      return;
-    }
+          this.insert(character.content, true);
+          return resolve();
+        }
+      }, this.typePace);
+    });
   }
 
   setOptions(settings, defaults = null, autonext = true) {
@@ -499,23 +503,32 @@ class Instance {
     this.typePace = this.options.lifeLike ? randomInRange(typeSpeed, typeRange) : typeSpeed;
     this.deletePace = this.options.lifeLike ? randomInRange(deleteSpeed, deleteRange) : deleteSpeed;
   }
+  /**
+   * Delete's a single printed character.
+   */
+
 
   delete() {
-    let contents = noderize(this.contents());
-    contents.splice(-1, 1);
-    contents = contents.map(character => {
-      if (typeof character === 'object') {
-        return createNodeString({
-          tag: character.tag,
-          attributes: character.attributes,
-          content: character.content
-        });
-      }
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        let contents = noderize(this.contents());
+        contents.splice(-1, 1);
+        contents = contents.map(character => {
+          if (typeof character === 'object') {
+            return createNodeString({
+              tag: character.tag,
+              attributes: character.attributes,
+              content: character.content
+            });
+          }
 
-      return character;
+          return character;
+        });
+        contents = contents.join('').replace(/<[^\/>][^>]*><\/[^>]+>/, "");
+        this.contents(contents);
+        return resolve();
+      }, this.deletePace);
     });
-    contents = contents.join('').replace(/<[^\/>][^>]*><\/[^>]+>/, "");
-    this.contents(contents);
   }
   /*
   * Empty the existing text, clearing it instantly.
