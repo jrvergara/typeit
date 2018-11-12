@@ -23,11 +23,19 @@
       section:nth-child(2n) {
         background: #d3d3d396;
       }
+
+      section {
+        height: 100vh;
+      }
     </style>
 
 	</head>
 
 	<body>
+
+    <section>
+
+    </section>
 
     <section>
       <h2>Single String</h2>
@@ -62,10 +70,11 @@
       window.instance = new TypeIt('#example1', {
         speed: 50,
         strings: ['five six seven eight'],
-        cursorChar: 'X',
         breakLines: true,
         loop: true,
         loopDelay: 5000,
+        waitUntilVisible: false,
+        loop: true,
         beforeString: function () {
           // console.log('before string!');
         },

@@ -13,7 +13,7 @@ window.TypeItDefaults = {
   loop: false,
   loopDelay: false,
   html: true,
-  autoStart: true,
+  waitUntilVisible: false,
   callback: false,
   beforeString: false,
   afterString: false,

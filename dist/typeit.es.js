@@ -57,7 +57,7 @@ window.TypeItDefaults = {
   loop: false,
   loopDelay: false,
   html: true,
-  autoStart: true,
+  waitUntilVisible: false,
   callback: false,
   beforeString: false,
   afterString: false,
@@ -150,12 +150,13 @@ class Instance {
       this.insertSplitPause(1);
     }
 
-    this.generateQueue();
-    this.fire(); //-- We have no strings! So, don't do anything.
-    // if (!this.options.strings.length || !this.options.strings[0]) return;
-    // if (this.autoInit) {
-    //   this.init();
-    // }
+    this.generateQueue(); //-- We have no strings! So, don't do anything.
+
+    if (!this.options.strings.length || !this.options.strings[0]) return;
+
+    if (this.autoInit) {
+      this.init();
+    }
   }
 
   async fire() {
@@ -344,27 +345,18 @@ class Instance {
     if (this.hasStarted) return;
     this.cursor();
 
-    if (this.options.autoStart) {
+    if (!this.options.waitUntilVisible || isVisible(this.element)) {
       this.hasStarted = true;
-      this.next();
+      this.fire();
       return;
     }
 
-    if (isVisible(this.element)) {
-      this.hasStarted = true;
-      this.next();
-      return;
-    }
-
-    let that = this;
-
-    function checkForStart(event) {
-      if (isVisible(that.element) && !that.hasStarted) {
-        that.hasStarted = true;
-        that.next();
-        event.currentTarget.removeEventListener(event.type, checkForStart);
+    const checkForStart = () => {
+      if (isVisible(this.element) && !this.hasStarted) {
+        this.fire();
+        window.removeEventListener("scroll", checkForStart);
       }
-    }
+    };
 
     window.addEventListener("scroll", checkForStart);
   }
@@ -428,8 +420,7 @@ class Instance {
   }
 
   break() {
-    this.insert("<br>");
-    this.next();
+    return this.insert("<br>");
   }
 
   pause(time = false) {

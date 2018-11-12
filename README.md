@@ -171,7 +171,7 @@ You may use these functions to generate a queue of typing events immediately upo
 new TypeIt('.type-it', {
 speed: 900,
 lifeLike: false,
-autoStart: false
+waitUntilVisibile: true
 })
 .type('I am typing slowly,')
 .options({speed: 100})
@@ -300,7 +300,7 @@ new TypeIt('#element', {
 | cursorChar    | (string) The character used for the cursor. HTML works too! | pipe |
 | breakLines    | (boolean) Choose whether you want multiple strings to be printed on top of each other (`breakLines: true`), or if you want each string to be deleted and replaced by the next one (`breakLines: false`).  | true  |
 | nextStringDelay    | (number in milliseconds or array) The amount of time (milliseconds) between typing strings when multiple are defined. You may either pass a number in milliseconds, or an array of values. The first value will be used as the delay before a new string starts, and the second value will be used as the delay after a string has just ended. For example, passing `[1000, 2000]` will tell TypeIt to pause 1000ms before typing a new string, and wait 2000ms after a string has just completed. This would be equivalent to `instance.type('String 1').pause(2000).delete().pause(1000).type('String 2')`. If a number is passed, that value will be halved. | 750 |
-| autoStart    | (boolean) Determines if the instance will typing automatically on page load, or only when the target element becomes visible in the viewport. If you don't want instances far down on the page to begin until they're visible, set this option to `false.` | true  |
+| waitUntilVisibile    | (boolean) Determines if the instance will typing automatically on page load, or only when the target element becomes visible in the viewport. If you don't want instances far down on the page to begin until they're visible, set this option to `true.` | false |
 | startDelete    | (boolean) Whether to begin instance by deleting strings inside element, and then typing what strings are defined via JSON or companion functions. | false  |
 | startDelay    | (number in milliseconds) The amount of time before the plugin begins typing after initalizing.  | 250  |
 | loop    | (boolean) Have your string or strings continuously loop after completing.  | false  |

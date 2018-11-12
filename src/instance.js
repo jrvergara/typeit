@@ -42,14 +42,12 @@ export default class Instance {
 
     this.generateQueue();
 
-    this.fire();
-
     //-- We have no strings! So, don't do anything.
-    // if (!this.options.strings.length || !this.options.strings[0]) return;
+    if (!this.options.strings.length || !this.options.strings[0]) return;
 
-    // if (this.autoInit) {
-    //   this.init();
-    // }
+    if (this.autoInit) {
+      this.init();
+    }
   }
 
   async fire() {
@@ -279,25 +277,16 @@ export default class Instance {
 
     this.cursor();
 
-    if (this.options.autoStart) {
+    if (!this.options.waitUntilVisible || isVisible(this.element)) {
       this.hasStarted = true;
-      this.next();
+      this.fire();
       return;
     }
 
-    if (isVisible(this.element)) {
-      this.hasStarted = true;
-      this.next();
-      return;
-    }
-
-    let that = this;
-
-    function checkForStart(event) {
-      if (isVisible(that.element) && !that.hasStarted) {
-        that.hasStarted = true;
-        that.next();
-        event.currentTarget.removeEventListener(event.type, checkForStart);
+    const checkForStart = () => {
+      if (isVisible(this.element) && !this.hasStarted) {
+        this.fire();
+        window.removeEventListener("scroll", checkForStart);
       }
     }
 
@@ -378,8 +367,7 @@ export default class Instance {
   }
 
   break() {
-    this.insert("<br>");
-    this.next();
+    return this.insert("<br>");
   }
 
   pause(time = false) {
@@ -423,7 +411,6 @@ export default class Instance {
         }
       }, this.typePace);
     })
-
   }
 
   setOptions(settings, defaults = null, autonext = true) {
