@@ -17,13 +17,13 @@ export default class Instance {
     this.typeit = typeit;
     this.autoInit = autoInit;
     this.element = element;
-    this.timeouts = [];
     this.hasStarted = false;
     this.isFrozen = false;
     this.isComplete = false;
     this.queue = [];
     this.stringsToDelete = "";
-    this.setOptions(options, defaults, false);
+    this.options = Object.assign({}, defaults, options);
+
     this.prepareTargetElement();
     this.prepareDelay("nextStringDelay");
     this.prepareDelay("loopDelay");
@@ -409,30 +409,6 @@ export default class Instance {
         }
       }, this.typePace);
     })
-  }
-
-  //@todo refactor
-  setOptions(settings, defaults = null, autonext = true) {
-    let mergedSettings = {};
-
-    if (defaults === null) {
-      defaults = this.options;
-    }
-
-    for (let attrname in defaults) {
-      mergedSettings[attrname] = defaults[attrname];
-    }
-
-    for (let attrname in settings) {
-      mergedSettings[attrname] = settings[attrname];
-    }
-
-    this.options = mergedSettings;
-
-    //@todo do i need this?
-    if (autonext) {
-      this.next();
-    }
   }
 
   setPace() {
