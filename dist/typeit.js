@@ -175,31 +175,43 @@
     }
 
     async fire() {
-      for (let key of this.queue) {
-        await new Promise(async (resolve, reject) => {
-          this.setPace();
+      let queue = this.queue.slice();
 
-          if (key[2] && key[2].isFirst && this.options.beforeString) {
-            this.options.beforeString(key, this.queue, this.typeit);
-          }
+      for (let key of queue) {
+        try {
+          await new Promise(async (resolve, reject) => {
+            if (this.status.isFrozen) {
+              return reject();
+            }
 
-          if (this.options.beforeStep) {
-            this.options.beforeStep(key, this.queue, this.typeit);
-          } //-- Fire this step!
+            this.setPace();
+
+            if (key[2] && key[2].isFirst && this.options.beforeString) {
+              this.options.beforeString(key, this.queue, this.typeit);
+            }
+
+            if (this.options.beforeStep) {
+              this.options.beforeStep(key, this.queue, this.typeit);
+            } //-- Fire this step!
 
 
-          await key[0].call(this, key[1], key[2]);
+            await key[0].call(this, key[1], key[2]);
 
-          if (key[2] && key[2].isLast && this.options.afterString) {
-            this.options.afterString(key, this.queue, this.typeit);
-          }
+            if (key[2] && key[2].isLast && this.options.afterString) {
+              this.options.afterString(key, this.queue, this.typeit);
+            }
 
-          if (this.options.afterStep) {
-            this.options.afterStep(key, this.queue, this.typeit);
-          }
+            if (this.options.afterStep) {
+              this.options.afterStep(key, this.queue, this.typeit);
+            } //-- Remove this item from the global queue. Needed for pausing.
 
-          resolve();
-        });
+
+            this.queue.shift();
+            resolve();
+          });
+        } catch (e) {
+          break;
+        }
       }
 
       if (this.options.afterComplete) {
@@ -524,22 +536,6 @@
       this.contents("");
     }
 
-    next() {
-      return;
-
-      if (this.isFrozen) {
-        return;
-      }
-
-      if (this.options.loop) {
-        let delay = this.options.loopDelay ? this.options.loopDelay : this.options.nextStringDelay;
-        this.queueDeletions(this.contents());
-        this.generateQueue([this.pause, delay.before]);
-      }
-
-      this.isComplete = true;
-    }
-
   }
 
   class Core {
@@ -584,31 +580,48 @@
 
   }
 
+  function allHaveStatus (things, property, value) {
+    if (!things.length) return false;
+    let result = things.filter(thing => {
+      return thing.status[property] === value;
+    });
+    return result.length === things.length;
+  }
+
   class TypeIt extends Core {
     constructor(element, args, autoInit = true) {
       super(element, args, autoInit);
     }
 
-    get isComplete() {
-      if (!this.instances.length) return false;
-      return allHaveStatus(this.instances, 'isComplete', true); // get the first, or make sure ALL are?
+    is(status) {
+      return allHaveStatus(this.instances, status, true);
+    } // isComplete() {
+    //   return allHaveStatus(this.instances, 'isComplete', true);
+    // }
+    // //-- @todo do i need this?
+    // hasBeenDestroyed() {
+    //   return allHaveStatus(this.instances, 'hasBeenDestroyed', true);
+    // }
+    // hasStarted() {
+    //   return allHaveStatus(this.instances, 'hasStarted', true);
+    // }
+    // isFrozen() {
+    //   return allHaveStatus(this.instances, 'isFrozen', true);
+    // }
 
-      return this.instances[0].status.isComplete;
+
+    freeze() {
+      this.instances.forEach(instance => {
+        instance.status.isFrozen = true;
+      });
     }
 
-    get hasBeenDestroyed() {
-      if (!this.instances.length) return false;
-      return this.instances[0].hasBeenDestroyed;
-    }
-
-    get hasStarted() {
-      if (!this.instances.length) return false;
-      return this.instances[0].hasStarted;
-    }
-
-    get isFrozen() {
-      if (!this.instances.length) return false;
-      return this.instances[0].isFrozen;
+    unfreeze() {
+      this.instances.forEach(instance => {
+        if (!instance.status.isFrozen) return;
+        instance.status.isFrozen = false;
+        instance.fire();
+      });
     }
     /**
      * If used after typing has started, will append strings to the end of the existing queue. If used when typing is paused, will restart it.
@@ -664,21 +677,8 @@
     options(options) {
       this.queueUp("setOptions", options);
       return this;
-    }
+    } // @todo rewrite
 
-    freeze() {
-      this.instances.forEach(instance => {
-        instance.isFrozen = true;
-      });
-    }
-
-    unfreeze() {
-      this.instances.forEach(instance => {
-        if (!instance.isFrozen) return;
-        instance.isFrozen = false;
-        instance.next();
-      });
-    }
 
     destroy(removeCursor = true) {
       this.instances.forEach(instance => {
@@ -703,7 +703,8 @@
       this.instances = this.instances.map(instance => {
         return instance.reset();
       });
-    }
+    } // @todo remove?
+
 
     init(requireAutoInit = false) {
       this.instances.forEach(instance => {

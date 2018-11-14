@@ -68,10 +68,11 @@
 
 		<script>
       window.instance = new TypeIt('#example1', {
-        speed: 51,
+        speed: 500,
         strings: ['five six seven eight'],
         breakLines: true,
-        loopDelay: 5000,
+        loopDelay: 0,
+        loop: false,
         waitUntilVisible: false,
         beforeString: function () {
           // console.log('before string!');

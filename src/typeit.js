@@ -1,37 +1,46 @@
 import Core from "./core";
-import every from "./helpers/allHaveStatus";
+import allHaveStatus from "./helpers/allHaveStatus";
 
 export default class TypeIt extends Core {
   constructor(element, args, autoInit = true) {
     super(element, args, autoInit);
   }
 
-  get isComplete() {
-    if (!this.instances.length) return false;
-
-    return allHaveStatus(this.instances, 'isComplete', true);
-
-    // get the first, or make sure ALL are?
-    return this.instances[0].status.isComplete;
+  is(status) {
+    return allHaveStatus(this.instances, status, true);
   }
 
-  get hasBeenDestroyed() {
-    if (!this.instances.length) return false;
+  // isComplete() {
+  //   return allHaveStatus(this.instances, 'isComplete', true);
+  // }
 
-    return this.instances[0].hasBeenDestroyed;
+  // //-- @todo do i need this?
+  // hasBeenDestroyed() {
+  //   return allHaveStatus(this.instances, 'hasBeenDestroyed', true);
+  // }
+
+  // hasStarted() {
+  //   return allHaveStatus(this.instances, 'hasStarted', true);
+  // }
+
+  // isFrozen() {
+  //   return allHaveStatus(this.instances, 'isFrozen', true);
+  // }
+
+  freeze() {
+    this.instances.forEach(instance => {
+      instance.status.isFrozen = true;
+    });
   }
 
-  get hasStarted() {
-    if (!this.instances.length) return false;
-
-    return this.instances[0].hasStarted;
+  unfreeze() {
+    this.instances.forEach(instance => {
+      if (!instance.status.isFrozen) return;
+      instance.status.isFrozen = false;
+      instance.fire();
+    });
   }
 
-  get isFrozen() {
-    if (!this.instances.length) return false;
-
-    return this.instances[0].isFrozen;
-  }
 
   /**
    * If used after typing has started, will append strings to the end of the existing queue. If used when typing is paused, will restart it.
@@ -88,21 +97,7 @@ export default class TypeIt extends Core {
     return this;
   }
 
-  freeze() {
-    this.instances.forEach(instance => {
-      instance.isFrozen = true;
-    });
-  }
-
-  unfreeze() {
-    this.instances.forEach(instance => {
-      if (!instance.isFrozen) return;
-
-      instance.isFrozen = false;
-      instance.next();
-    });
-  }
-
+  // @todo rewrite
   destroy(removeCursor = true) {
     this.instances.forEach(instance => {
       instance.timeouts.forEach(timeout => {
@@ -121,6 +116,23 @@ export default class TypeIt extends Core {
     });
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /**
    * Reset each instance with a new instance.
    */
@@ -130,6 +142,7 @@ export default class TypeIt extends Core {
     });
   }
 
+  // @todo remove?
   init(requireAutoInit = false) {
     this.instances.forEach(instance => {
       if (!requireAutoInit) {

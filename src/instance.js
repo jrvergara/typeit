@@ -51,31 +51,47 @@ export default class Instance {
   }
 
   async fire() {
-    for (let key of this.queue) {
-      await new Promise(async (resolve, reject) => {
-        this.setPace();
+    let queue = this.queue.slice();
 
-        if (key[2] && key[2].isFirst && this.options.beforeString) {
-          this.options.beforeString(key, this.queue, this.typeit);
-        }
+    for (let key of queue) {
 
-        if (this.options.beforeStep) {
-          this.options.beforeStep(key, this.queue, this.typeit);
-        }
+      try {
+        await new Promise(async (resolve, reject) => {
 
-        //-- Fire this step!
-        await key[0].call(this, key[1], key[2]);
+          if (this.status.isFrozen) {
+            return reject();
+          }
 
-        if (key[2] && key[2].isLast && this.options.afterString) {
-          this.options.afterString(key, this.queue, this.typeit);
-        }
+          this.setPace();
 
-        if (this.options.afterStep) {
-          this.options.afterStep(key, this.queue, this.typeit);
-        }
+          if (key[2] && key[2].isFirst && this.options.beforeString) {
+            this.options.beforeString(key, this.queue, this.typeit);
+          }
 
-        resolve();
-      });
+          if (this.options.beforeStep) {
+            this.options.beforeStep(key, this.queue, this.typeit);
+          }
+
+          //-- Fire this step!
+          await key[0].call(this, key[1], key[2]);
+
+          if (key[2] && key[2].isLast && this.options.afterString) {
+            this.options.afterString(key, this.queue, this.typeit);
+          }
+
+          if (this.options.afterStep) {
+            this.options.afterStep(key, this.queue, this.typeit);
+          }
+
+          //-- Remove this item from the global queue. Needed for pausing.
+          this.queue.shift();
+
+          resolve();
+        });
+      } catch (e) {
+        break;
+      }
+
     }
 
     if (this.options.afterComplete) {
@@ -436,7 +452,6 @@ export default class Instance {
    * Delete's a single printed character.
    */
   delete() {
-
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         let contents = noderize(this.contents());
@@ -469,25 +484,5 @@ export default class Instance {
   */
   empty() {
     this.contents("");
-  }
-
-  next() {
-
-    return;
-
-    if (this.isFrozen) {
-      return;
-    }
-
-    if (this.options.loop) {
-      let delay = this.options.loopDelay
-        ? this.options.loopDelay
-        : this.options.nextStringDelay;
-      this.queueDeletions(this.contents());
-      this.generateQueue([this.pause, delay.before]);
-
-    }
-
-    this.isComplete = true;
   }
 }
