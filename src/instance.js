@@ -17,11 +17,13 @@ export default class Instance {
     this.typeit = typeit;
     this.autoInit = autoInit;
     this.element = element;
-    this.hasStarted = false;
-    this.isFrozen = false;
-    this.isComplete = false;
     this.queue = [];
     this.stringsToDelete = "";
+    this.status = {
+      hasStarted: false,
+      isComplete: false,
+      isFrozen: false
+    }
     this.options = Object.assign({}, defaults, options);
 
     this.prepareTargetElement();
@@ -102,6 +104,8 @@ export default class Instance {
 
       }, delay.after);
     }
+
+    this.status.isComplete = true;
 
     return;
   }
@@ -271,18 +275,18 @@ export default class Instance {
   }
 
   init() {
-    if (this.hasStarted) return;
+    if (this.status.hasStarted) return;
 
     this.cursor();
 
     if (!this.options.waitUntilVisible || isVisible(this.element)) {
-      this.hasStarted = true;
+      this.status.hasStarted = true;
       this.fire();
       return;
     }
 
     const checkForStart = () => {
-      if (isVisible(this.element) && !this.hasStarted) {
+      if (isVisible(this.element) && !this.status.hasStarted) {
         this.fire();
         window.removeEventListener("scroll", checkForStart);
       }

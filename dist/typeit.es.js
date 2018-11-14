@@ -42,6 +42,16 @@ function toArray(string) {
   return Array.isArray(string) ? string.slice(0) : string.split("<br>");
 }
 
+function toArrayOfNodes (thing) {
+  if (typeof thing === "string") {
+    thing = document.querySelectorAll(thing);
+  } else if (!(thing instanceof NodeList)) {
+    thing = [thing];
+  }
+
+  return [].slice.call(thing);
+}
+
 var defaults = {
   strings: [],
   speed: 100,
@@ -128,11 +138,13 @@ class Instance {
     this.typeit = typeit;
     this.autoInit = autoInit;
     this.element = element;
-    this.hasStarted = false;
-    this.isFrozen = false;
-    this.isComplete = false;
     this.queue = [];
     this.stringsToDelete = "";
+    this.status = {
+      hasStarted: false,
+      isComplete: false,
+      isFrozen: false
+    };
     this.options = Object.assign({}, defaults, options);
     this.prepareTargetElement();
     this.prepareDelay("nextStringDelay");
@@ -203,6 +215,7 @@ class Instance {
       }, delay.after);
     }
 
+    this.status.isComplete = true;
     return;
   }
   /**
@@ -339,17 +352,17 @@ class Instance {
   }
 
   init() {
-    if (this.hasStarted) return;
+    if (this.status.hasStarted) return;
     this.cursor();
 
     if (!this.options.waitUntilVisible || isVisible(this.element)) {
-      this.hasStarted = true;
+      this.status.hasStarted = true;
       this.fire();
       return;
     }
 
     const checkForStart = () => {
-      if (isVisible(this.element) && !this.hasStarted) {
+      if (isVisible(this.element) && !this.status.hasStarted) {
         this.fire();
         window.removeEventListener("scroll", checkForStart);
       }
@@ -525,33 +538,18 @@ class Instance {
 
 class Core {
   constructor(element, args, autoInit = true) {
-    this.id = generateHash();
     this.instances = [];
-    this.elements = [];
-    this.args = args;
-    this.autoInit = autoInit;
-
-    if (typeof element === "object") {
-      //-- There's only one!
-      if (element.length === undefined) {
-        this.elements.push(element);
-      } else {
-        //-- It's already an array!
-        this.elements = element;
-      }
-    } //-- Convert to array of elements.
-
-
-    if (typeof element === "string") {
-      this.elements = document.querySelectorAll(element);
-    }
-
-    this.generateInstances();
+    this.generateInstances({
+      elements: toArrayOfNodes(element),
+      id: generateHash(),
+      autoInit,
+      args
+    });
   }
 
-  generateInstances() {
-    [].slice.call(this.elements).forEach(element => {
-      this.instances.push(new Instance(element, this.id, this.args, this.autoInit, this));
+  generateInstances(args) {
+    args.elements.forEach(element => {
+      this.instances.push(new Instance(element, args.id, args.args, args.autoInit, this));
     });
   }
   /**
@@ -564,6 +562,7 @@ class Core {
 
 
   queueUp(action, argument = null) {
+    //@todo what is this? needed?
     this.init(true);
     this.instances.forEach(instance => {
       instance.queue.push([instance[action], argument]);
@@ -586,7 +585,9 @@ class TypeIt extends Core {
 
   get isComplete() {
     if (!this.instances.length) return false;
-    return this.instances[0].isComplete;
+    return allHaveStatus(this.instances, 'isComplete', true); // get the first, or make sure ALL are?
+
+    return this.instances[0].status.isComplete;
   }
 
   get hasBeenDestroyed() {

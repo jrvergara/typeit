@@ -1,4 +1,5 @@
 import Core from "./core";
+import every from "./helpers/allHaveStatus";
 
 export default class TypeIt extends Core {
   constructor(element, args, autoInit = true) {
@@ -8,7 +9,10 @@ export default class TypeIt extends Core {
   get isComplete() {
     if (!this.instances.length) return false;
 
-    return this.instances[0].isComplete;
+    return allHaveStatus(this.instances, 'isComplete', true);
+
+    // get the first, or make sure ALL are?
+    return this.instances[0].status.isComplete;
   }
 
   get hasBeenDestroyed() {

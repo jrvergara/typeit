@@ -1,4 +1,4 @@
-import Instance from '../src/instance.js';
+import Instance from '../src/Instance.js';
 
 let instance;
 

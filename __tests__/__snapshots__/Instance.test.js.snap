@@ -1,35 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`queueDeletions() Adds steps to beginning of queue when frontLoad is true. 1`] = `
-Array [
-  Array [
-    [Function],
-    1,
-  ],
-  Array [
-    [Function],
-    1,
-  ],
-  Array [
-    [Function],
-    1,
-  ],
-  Array [
-    [Function],
-    1,
-  ],
-  Array [
-    [Function],
-    1,
-  ],
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-]
-`;
-
 exports[`queueDeletions() Queues correct length when HTML is passed. 1`] = `
 Array [
   Array [

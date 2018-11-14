@@ -1,36 +1,23 @@
-import { generateHash } from "./utilities";
-import Instance from "./instance";
+import { generateHash, toArray } from "./utilities";
+import toArrayOfNodes from "./helpers/toArrayOfNodes";
+import Instance from "./Instance";
 
+//@todo does this need to be a class at all?
 export default class Core {
   constructor(element, args, autoInit = true) {
-    this.id = generateHash();
     this.instances = [];
-    this.elements = [];
-    this.args = args;
-    this.autoInit = autoInit;
-
-    if (typeof element === "object") {
-      //-- There's only one!
-      if (element.length === undefined) {
-        this.elements.push(element);
-      } else {
-        //-- It's already an array!
-        this.elements = element;
-      }
-    }
-
-    //-- Convert to array of elements.
-    if (typeof element === "string") {
-      this.elements = document.querySelectorAll(element);
-    }
-
-    this.generateInstances();
+    this.generateInstances({
+      elements: toArrayOfNodes(element),
+      id: generateHash(),
+      autoInit,
+      args
+    });
   }
 
-  generateInstances() {
-    [].slice.call(this.elements).forEach(element => {
+  generateInstances(args) {
+    args.elements.forEach(element => {
       this.instances.push(
-        new Instance(element, this.id, this.args, this.autoInit, this)
+        new Instance(element, args.id, args.args, args.autoInit, this)
       );
     });
   }
@@ -43,6 +30,7 @@ export default class Core {
    * @param {*} argument
    */
   queueUp(action, argument = null) {
+    //@todo what is this? needed?
     this.init(true);
 
     this.instances.forEach(instance => {
