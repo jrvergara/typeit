@@ -10,33 +10,16 @@ export default class TypeIt extends Core {
     return allHaveStatus(this.instances, status, true);
   }
 
-  // isComplete() {
-  //   return allHaveStatus(this.instances, 'isComplete', true);
-  // }
-
-  // //-- @todo do i need this?
-  // hasBeenDestroyed() {
-  //   return allHaveStatus(this.instances, 'hasBeenDestroyed', true);
-  // }
-
-  // hasStarted() {
-  //   return allHaveStatus(this.instances, 'hasStarted', true);
-  // }
-
-  // isFrozen() {
-  //   return allHaveStatus(this.instances, 'isFrozen', true);
-  // }
-
   freeze() {
     this.instances.forEach(instance => {
-      instance.status.isFrozen = true;
+      instance.status.frozen = true;
     });
   }
 
   unfreeze() {
     this.instances.forEach(instance => {
-      if (!instance.status.isFrozen) return;
-      instance.status.isFrozen = false;
+      if (!instance.status.frozen) return;
+      instance.status.frozen = false;
       instance.fire();
     });
   }
@@ -100,11 +83,10 @@ export default class TypeIt extends Core {
   // @todo rewrite
   destroy(removeCursor = true) {
     this.instances.forEach(instance => {
-      instance.timeouts.forEach(timeout => {
-        clearTimeout(timeout);
-      });
 
-      instance.timeouts = [];
+      instance.timeouts.forEach(timeout => {
+
+      });
 
       if (removeCursor && instance.options.cursor) {
         instance.elementWrapper.removeChild(
@@ -112,7 +94,7 @@ export default class TypeIt extends Core {
         );
       }
 
-      instance.hasBeenDestroyed = true;
+      instance.status.destroyed = true;
     });
   }
 

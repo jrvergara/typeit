@@ -233,51 +233,12 @@ myInstance.init(); //-- Now it's initialized!
 ```
 
 ### Check for Instance States
-There are several properties attached to each instance of TypeIt that reveal current states.
+There are several properties attached to each instance of TypeIt that reveal current states. To check any of them pass them to the `instance.is(STATE)` method.
 
-#### Is my instance complete?
-Use the `isComplete` property:
-
-```js
-var instance = new TypeIt('#element', { /* options... */ });
-
-if(instance.isComplete) {
-    //-- Do something.
-}
-```
-
-#### Has my instance been destroyed?
-Use the `hasBeenDestroyed` property:
-
-```js
-var instance = new TypeIt('#element', { /* options... */ });
-
-if(instance.hasBeenDestroyed) {
-    //-- Do something.
-}
-```
-
-#### Is my instance frozen?
-Use the `isFrozen` property:
-
-```js
-var instance = new TypeIt('#element', { /* options... */ });
-
-if(instance.isFrozen) {
-    //-- Do something.
-}
-```
-
-#### Has my instance started?
-Use the `hasStarted` property.
-
-```js
-var instance = new TypeIt('#element', { /* options... */ }, false);
-
-if(!instance.hasStarted) {
-    //-- Do something.
-}
-```
+| State        | Example   |
+| ------------- | ------------- |
+| `frozen` | instance.is('frozen')
+| `complete` | instance.is('complete')
 
 ## Options
 You can modify the options for the plugin by passing in JSON upon instantiation. It'll look something like this:

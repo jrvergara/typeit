@@ -138,12 +138,14 @@ class Instance {
     this.typeit = typeit;
     this.autoInit = autoInit;
     this.element = element;
+    this.timeouts = [];
     this.queue = [];
     this.stringsToDelete = "";
     this.status = {
-      hasStarted: false,
-      isComplete: false,
-      isFrozen: false
+      started: false,
+      complete: false,
+      frozen: false,
+      destroyed: false
     };
     this.options = Object.assign({}, defaults, options);
     this.prepareTargetElement();
@@ -174,7 +176,7 @@ class Instance {
     for (let key of queue) {
       try {
         await new Promise(async (resolve, reject) => {
-          if (this.status.isFrozen) {
+          if (this.status.frozen) {
             return reject();
           }
 
@@ -227,7 +229,7 @@ class Instance {
       }, delay.after);
     }
 
-    this.status.isComplete = true;
+    this.status.complete = true;
     return;
   }
   /**
@@ -364,17 +366,17 @@ class Instance {
   }
 
   init() {
-    if (this.status.hasStarted) return;
+    if (this.status.started) return;
     this.cursor();
 
     if (!this.options.waitUntilVisible || isVisible(this.element)) {
-      this.status.hasStarted = true;
+      this.status.started = true;
       this.fire();
       return;
     }
 
     const checkForStart = () => {
-      if (isVisible(this.element) && !this.status.hasStarted) {
+      if (isVisible(this.element) && !this.status.started) {
         this.fire();
         window.removeEventListener("scroll", checkForStart);
       }
@@ -589,31 +591,18 @@ class TypeIt extends Core {
 
   is(status) {
     return allHaveStatus(this.instances, status, true);
-  } // isComplete() {
-  //   return allHaveStatus(this.instances, 'isComplete', true);
-  // }
-  // //-- @todo do i need this?
-  // hasBeenDestroyed() {
-  //   return allHaveStatus(this.instances, 'hasBeenDestroyed', true);
-  // }
-  // hasStarted() {
-  //   return allHaveStatus(this.instances, 'hasStarted', true);
-  // }
-  // isFrozen() {
-  //   return allHaveStatus(this.instances, 'isFrozen', true);
-  // }
-
+  }
 
   freeze() {
     this.instances.forEach(instance => {
-      instance.status.isFrozen = true;
+      instance.status.frozen = true;
     });
   }
 
   unfreeze() {
     this.instances.forEach(instance => {
-      if (!instance.status.isFrozen) return;
-      instance.status.isFrozen = false;
+      if (!instance.status.frozen) return;
+      instance.status.frozen = false;
       instance.fire();
     });
   }
@@ -676,16 +665,13 @@ class TypeIt extends Core {
 
   destroy(removeCursor = true) {
     this.instances.forEach(instance => {
-      instance.timeouts.forEach(timeout => {
-        clearTimeout(timeout);
-      });
-      instance.timeouts = [];
+      instance.timeouts.forEach(timeout => {});
 
       if (removeCursor && instance.options.cursor) {
         instance.elementWrapper.removeChild(instance.elementWrapper.querySelector(".ti-cursor"));
       }
 
-      instance.hasBeenDestroyed = true;
+      instance.status.destroyed = true;
     });
   }
   /**

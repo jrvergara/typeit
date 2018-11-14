@@ -17,12 +17,14 @@ export default class Instance {
     this.typeit = typeit;
     this.autoInit = autoInit;
     this.element = element;
+    this.timeouts = [];
     this.queue = [];
     this.stringsToDelete = "";
     this.status = {
-      hasStarted: false,
-      isComplete: false,
-      isFrozen: false
+      started: false,
+      complete: false,
+      frozen: false,
+      destroyed: false
     }
     this.options = Object.assign({}, defaults, options);
 
@@ -58,7 +60,7 @@ export default class Instance {
       try {
         await new Promise(async (resolve, reject) => {
 
-          if (this.status.isFrozen) {
+          if (this.status.frozen) {
             return reject();
           }
 
@@ -121,7 +123,7 @@ export default class Instance {
       }, delay.after);
     }
 
-    this.status.isComplete = true;
+    this.status.complete = true;
 
     return;
   }
@@ -291,18 +293,18 @@ export default class Instance {
   }
 
   init() {
-    if (this.status.hasStarted) return;
+    if (this.status.started) return;
 
     this.cursor();
 
     if (!this.options.waitUntilVisible || isVisible(this.element)) {
-      this.status.hasStarted = true;
+      this.status.started = true;
       this.fire();
       return;
     }
 
     const checkForStart = () => {
-      if (isVisible(this.element) && !this.status.hasStarted) {
+      if (isVisible(this.element) && !this.status.started) {
         this.fire();
         window.removeEventListener("scroll", checkForStart);
       }
