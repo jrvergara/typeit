@@ -80,13 +80,14 @@ export default class TypeIt extends Core {
     return this;
   }
 
-  // @todo rewrite
   destroy(removeCursor = true) {
     this.instances.forEach(instance => {
 
       instance.timeouts.forEach(timeout => {
-
+        clearTimeout(timeout);
       });
+
+      instance.timeouts = [];
 
       if (removeCursor && instance.options.cursor) {
         instance.elementWrapper.removeChild(
@@ -98,25 +99,8 @@ export default class TypeIt extends Core {
     });
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   /**
-   * Reset each instance with a new instance.
+   * Reset each instance like it's brand new.
    */
   reset() {
     this.instances = this.instances.map(instance => {

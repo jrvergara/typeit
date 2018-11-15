@@ -6,10 +6,10 @@ import {
   toArray,
   appendStyleBlock
 } from "./utilities";
-let baseInlineStyles = "display:inline;position:relative;font:inherit;color:inherit;line-height:inherit;";
-
 import noderize from './helpers/noderize';
 import createNodeString from './helpers/createNodeString';
+
+let baseInlineStyles = "display:inline;position:relative;font:inherit;color:inherit;line-height:inherit;";
 
 export default class Instance {
   constructor(element, id, options, autoInit = true, typeit = null) {
@@ -106,7 +106,7 @@ export default class Instance {
         this.options.loopDelay :
         this.options.nextStringDelay;
 
-      setTimeout(() => {
+      this.wait(() => {
 
         //-- Reset queue with initial loop pause.
         this.queue = [];
@@ -120,7 +120,7 @@ export default class Instance {
         //-- Kick it!
         this.fire();
 
-      }, delay.after);
+      }, delay.after)
     }
 
     this.status.complete = true;
@@ -209,6 +209,8 @@ export default class Instance {
         : initialStep;
 
     this.queue.push(initialStep);
+
+    console.log(this.options.strings);
 
     this.options.strings.forEach((string, index) => {
       this.queueString(string);
@@ -369,10 +371,10 @@ export default class Instance {
    */
   prepareTargetElement() {
     //-- If any of the existing children nodes have .ti-container, clear it out because this is a remnant of a previous instance.
+
     [].slice.call(this.element.childNodes).forEach(node => {
       if (node.classList === undefined) return;
-
-      if (node.classList.contains("ti-container")) {
+      if (node.classList.contains("ti-wrapper")) {
         this.element.innerHTML = "";
       }
     });
@@ -390,11 +392,15 @@ export default class Instance {
     return this.insert("<br>");
   }
 
+  wait(callback, delay) {
+    this.timeouts.push(setTimeout(callback, delay));
+  }
+
   pause(time = false) {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
+      this.wait(() => {
         return resolve();
-      }, time ? time : this.options.nextStringDelay.total);
+      }, time ? time : this.options.nextStringDelay.total)
     });
   }
 
@@ -405,7 +411,7 @@ export default class Instance {
   type(character) {
 
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
+      this.wait(() => {
         //-- We hit a standard string.
         if (typeof character === 'string') {
           this.insert(character);
@@ -455,7 +461,7 @@ export default class Instance {
    */
   delete() {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
+      this.wait(() => {
         let contents = noderize(this.contents());
 
         contents.splice(-1, 1);
@@ -477,7 +483,7 @@ export default class Instance {
         this.contents(contents);
 
         return resolve();
-      }, this.deletePace)
+      }, this.deletePace);
     });
   }
 

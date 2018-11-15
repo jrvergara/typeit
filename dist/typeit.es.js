@@ -217,7 +217,7 @@ class Instance {
     if (this.options.loop) {
       //-- Split the delay!
       let delay = this.options.loopDelay ? this.options.loopDelay : this.options.nextStringDelay;
-      setTimeout(() => {
+      this.wait(() => {
         //-- Reset queue with initial loop pause.
         this.queue = []; //-- Queue deletions.
 
@@ -295,6 +295,7 @@ class Instance {
   generateQueue(initialStep = null) {
     initialStep = initialStep === null ? [this.pause, this.options.startDelay] : initialStep;
     this.queue.push(initialStep);
+    console.log(this.options.strings);
     this.options.strings.forEach((string, index) => {
       this.queueString(string); //-- This is the last string. Get outta here.
 
@@ -430,7 +431,7 @@ class Instance {
     [].slice.call(this.element.childNodes).forEach(node => {
       if (node.classList === undefined) return;
 
-      if (node.classList.contains("ti-container")) {
+      if (node.classList.contains("ti-wrapper")) {
         this.element.innerHTML = "";
       }
     }); //-- Set the hard-coded string as the string(s) we'll type.
@@ -447,9 +448,13 @@ class Instance {
     return this.insert("<br>");
   }
 
+  wait(callback, delay) {
+    this.timeouts.push(setTimeout(callback, delay));
+  }
+
   pause(time = false) {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
+      this.wait(() => {
         return resolve();
       }, time ? time : this.options.nextStringDelay.total);
     });
@@ -462,7 +467,7 @@ class Instance {
 
   type(character) {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
+      this.wait(() => {
         //-- We hit a standard string.
         if (typeof character === 'string') {
           this.insert(character);
@@ -503,7 +508,7 @@ class Instance {
 
   delete() {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
+      this.wait(() => {
         let contents = noderize(this.contents());
         contents.splice(-1, 1);
         contents = contents.map(character => {
@@ -660,12 +665,14 @@ class TypeIt extends Core {
   options(options) {
     this.queueUp("setOptions", options);
     return this;
-  } // @todo rewrite
-
+  }
 
   destroy(removeCursor = true) {
     this.instances.forEach(instance => {
-      instance.timeouts.forEach(timeout => {});
+      instance.timeouts.forEach(timeout => {
+        clearTimeout(timeout);
+      });
+      instance.timeouts = [];
 
       if (removeCursor && instance.options.cursor) {
         instance.elementWrapper.removeChild(instance.elementWrapper.querySelector(".ti-cursor"));
@@ -675,7 +682,7 @@ class TypeIt extends Core {
     });
   }
   /**
-   * Reset each instance with a new instance.
+   * Reset each instance like it's brand new.
    */
 
 
