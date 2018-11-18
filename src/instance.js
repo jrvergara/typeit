@@ -19,7 +19,6 @@ export default class Instance {
     this.element = element;
     this.timeouts = [];
     this.queue = [];
-    this.stringsToDelete = "";
     this.status = {
       started: false,
       complete: false,
@@ -27,29 +26,50 @@ export default class Instance {
       destroyed: false
     }
     this.options = Object.assign({}, defaults, options);
-
-    this.prepareTargetElement();
     this.prepareDelay("nextStringDelay");
     this.prepareDelay("loopDelay");
     this.prepareDOM();
 
-    //-- Prepare strings.
-    this.options.strings = removeComments(toArray(this.options.strings));
+    if(this.options.queue !== null) {
+      this.generateCustomQueue();
 
-    if (this.options.startDelete && this.stringsToDelete) {
-      this.insert(this.stringsToDelete);
-      this.queue.push([this.delete]);
-      this.insertSplitPause(1);
+    } else {
+      this.options.strings = removeComments(toArray(this.options.strings));
+      let existingMarkup = this.prepareTargetElement();
+
+      if (this.options.startDelete && existingMarkup) {
+        this.insert(existingMarkup);
+        this.queue.push([this.delete]);
+        this.insertSplitPause(1);
+      }
+
+      this.generateQueueFromStrings();
     }
-
-    this.generateQueue();
-
-    //-- We have no strings! So, don't do anything.
-    if (!this.options.strings.length || !this.options.strings[0]) return;
 
     if (this.autoInit) {
       this.init();
     }
+  }
+
+  init() {
+    if (this.status.started) return;
+
+    this.cursor();
+
+    if (!this.options.waitUntilVisible || isVisible(this.element)) {
+      this.status.started = true;
+      this.fire();
+      return;
+    }
+
+    const checkForStart = () => {
+      if (isVisible(this.element) && !this.status.started) {
+        this.fire();
+        window.removeEventListener("scroll", checkForStart);
+      }
+    }
+
+    window.addEventListener("scroll", checkForStart);
   }
 
   async fire() {
@@ -115,7 +135,8 @@ export default class Instance {
         this.queueDeletions(this.contents());
 
         //-- Regenerate queue.
-        this.generateQueue([this.pause, delay.before]);
+        //@todo fix this following special queue stuff.
+        this.generateQueueFromStrings([this.pause, delay.before]);
 
         //-- Kick it!
         this.fire();
@@ -125,6 +146,11 @@ export default class Instance {
 
     this.status.complete = true;
 
+    return;
+  }
+
+  setOptions(options) {
+    this.options = Object.assign(this.options, options);
     return;
   }
 
@@ -202,15 +228,41 @@ export default class Instance {
     };
   }
 
-  generateQueue(initialStep = null) {
+  generateCustomQueue() {
+    this.options.queue.forEach(step => {
+      let method = step.shift();
+
+      switch (method) {
+        case 'type':
+          this.queueString(...step);
+          break;
+
+        case 'delete':
+          this.queueDeletions(...step);
+          break;
+
+        case 'pause':
+          this.queue.push([this.pause, ...step])
+          break;
+
+        case 'break':
+          this.queue.push([this.break]);
+          break;
+
+        case 'options':
+          this.queue.push([this.setOptions, ...step]);
+          break;
+      }
+    });
+  }
+
+  generateQueueFromStrings(initialStep = null) {
     initialStep =
       initialStep === null
         ? [this.pause, this.options.startDelay]
         : initialStep;
 
     this.queue.push(initialStep);
-
-    console.log(this.options.strings);
 
     this.options.strings.forEach((string, index) => {
       this.queueString(string);
@@ -233,7 +285,6 @@ export default class Instance {
    * Delete each character from a string.
    */
   queueDeletions(stringOrNumber = 0) {
-
     let numberOfCharsToDelete =
       typeof stringOrNumber === "string"
         ? noderize(stringOrNumber).length
@@ -292,27 +343,6 @@ export default class Instance {
       this.pause,
       this.options.nextStringDelay.after
     ]);
-  }
-
-  init() {
-    if (this.status.started) return;
-
-    this.cursor();
-
-    if (!this.options.waitUntilVisible || isVisible(this.element)) {
-      this.status.started = true;
-      this.fire();
-      return;
-    }
-
-    const checkForStart = () => {
-      if (isVisible(this.element) && !this.status.started) {
-        this.fire();
-        window.removeEventListener("scroll", checkForStart);
-      }
-    }
-
-    window.addEventListener("scroll", checkForStart);
   }
 
   cursor() {
@@ -379,13 +409,15 @@ export default class Instance {
       }
     });
 
+    let markup = this.element.innerHTML;
+
     //-- Set the hard-coded string as the string(s) we'll type.
-    if (!this.options.startDelete && this.element.innerHTML.length > 0) {
-      this.options.strings = this.element.innerHTML.trim();
-      return;
+    if (!this.options.startDelete && markup.length > 0) {
+      this.options.strings = markup.trim();
+      return "";
     }
 
-    this.stringsToDelete = this.element.innerHTML;
+    return markup;
   }
 
   break() {
@@ -457,7 +489,7 @@ export default class Instance {
   }
 
   /**
-   * Delete's a single printed character.
+   * Deletes a single printed character.
    */
   delete() {
     return new Promise((resolve, reject) => {
@@ -485,12 +517,5 @@ export default class Instance {
         return resolve();
       }, this.deletePace);
     });
-  }
-
-  /*
-  * Empty the existing text, clearing it instantly.
-  */
-  empty() {
-    this.contents("");
   }
 }

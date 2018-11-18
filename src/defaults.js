@@ -1,5 +1,6 @@
 export default {
   strings: [],
+  queue: null,
   speed: 100,
   deleteSpeed: null,
   lifeLike: true,

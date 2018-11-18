@@ -69,7 +69,14 @@
 		<script>
       window.instance = new TypeIt('#example1', {
         speed: 500,
-        strings: ['five six seven eight'],
+        queue: [
+          ['type', 'hello'],
+          ['pause', 1000],
+          ['options', {
+            speed: 50
+          } ],
+          ['type', 'hello'],
+        ],
         breakLines: true,
         loopDelay: 0,
         loop: false,
